@@ -3,11 +3,9 @@ clear; close all; clc;
 % constants
 m = 50; % [g]
 d = 0.02; % [m]
-C_D = 0.6; 
+Cd = 0.6; 
 h = 1655; % [m]
-rho = 1.05; % [kg/m^3] based on h from google :D
-
-density = stdatmo(h);
+rho = stdatmo(h);
 
 % 6 dimension initial state vector (3 intial positions & 3 initial velocities)
 X0 = [0, % N_0 (initial position in north direction)
