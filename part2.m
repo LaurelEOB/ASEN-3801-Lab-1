@@ -32,11 +32,6 @@ wind_2b = [0, % North direction
         0% Down direction
         ];
 
-wind_2c = [30, % North direction
-        0, % East direction
-        0% Down direction
-        ];
-
 % X will be vN, vE, vD, aN, aE, aD
 
 tspan = linspace(0,20,2000);
@@ -46,9 +41,6 @@ options = odeset('Events', @landing);
 
 [tout_2b, yout_2b] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m, g, wind_2b), tspan, X0, options);
 
-
-
-[tout_2c, yout_2c] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m, g, wind_2c), tspan, X0, options);
 
 
 
@@ -66,15 +58,34 @@ ylabel(colorbar, "Time [sec]")
 
 
 % Question 2.c.a
-figure()
-scatter3(yout_2c(:,1), yout_2c(:,2), -yout_2c(:,3), 50, tout_2c, "filled") 
+% figure()
+% scatter3(yout_2c(:,1), yout_2c(:,2), -yout_2c(:,3), 50, tout_2c, "filled") 
+% 
 
-xlabel('North (X-axis)')
-ylabel('East (Y-axis)')
-zlabel('Down (Flipped Z-axis)')
-title("2.c 20m/s Wind to the North")
+% title("2.c 20m/s Wind to the North")
+% 
+% ylabel(colorbar, "Time [sec]")
 
-ylabel(colorbar, "Time [sec]")
+figure('Position', [150 150 800 400]); hold on; view([0.2 -9 0.5]); grid minor;
+numOfLines = 7;
+for j = 1:numOfLines
+    wind_vel = (j-1)*10
+    wind_2c = [ wind_vel,0,0]; % N,E,D
+    [tout_2c, yout_2c] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m, g, wind_2c), tspan, X0, options);
+    plot3(yout_2c(:,1), yout_2c(:,2), -yout_2c(:,3),'LineWidth',3) 
+end
+xlabel('North (X-axis) [m]')
+ylabel('East (Y-axis) [m]')
+zlabel('Down (Flipped Z-axis) [m]')
+
+% xlim([-30 800])
+% ylim([0 1200])
+% xlabel('North (X-axis)')
+% ylabel('East (Y-axis)')
+
+
+legend(" 0m/s Wind","10m/s Wind","20m/s Wind","30m/s Wind","40m/s Wind","50m/s Wind","60m/s Wind",'Location','eastoutside');
+%annotation('textbox', [.777 .4 .145 .25], 'string', {"V_0_,_E= 50m/s","V_0_,_D= -50m/s","No Wind"})
 
 
 % Question 2.d ** Looked interesting, but not correct 
@@ -93,33 +104,33 @@ ylabel(colorbar, "Time [sec]")
 % annotation('textbox', [.777 .4 .145 .25], 'string', {"V_0_,_E= 50m/s","V_0_,_D= -50m/s","No Wind"})
 
 % Question 2.d 
-figure('Position', [150 150 600 500]); 
-t1 = tiledlayout(4,1);
-for i = 1:4
-    nexttile; hold on; grid on; grid on; grid minor;
-    init_altitude = i*3000/4;
-    rho = stdatmo(init_altitude);
-    for j = 1:7
-        wind_vel = (j-1)*10;
-        wind_2d = [wind_vel,wind_vel,-wind_vel]; % N,E,D
-        lineColors = [[0.9290 0.6940 0.1250];[0.4660 0.6740 0.1880];[0.3010 0.7450 0.9330];[0 0.4470 0.7410];[0.4940 0.1840 0.5560]];
-        [tout_2d, yout_2d] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m, g, wind_2d), tspan, X0_2d, options);
-        scatter(yout_2d(end,1),yout_2d(end,2),'filled',"LineWidth",2)
-        
-    end
-    scatter(0,0,'+k')
-    xlim([-30 800])
-    ylim([0 1200])
-    xlabel('North (X-axis)')
-    ylabel('East (Y-axis)')
-    title("Initial Altitude of " +init_altitude+"m")
-end
+% figure('Position', [150 150 600 500]); 
+% t1 = tiledlayout(4,1);
+% for i = 1:4
+%     nexttile; hold on; grid on; grid on; grid minor;
+%     init_altitude = i*3000/4;
+%     rho = stdatmo(init_altitude);
+%     for j = 1:7
+%         wind_vel = (j-1)*10;
+%         wind_2d = [wind_vel,wind_vel,-wind_vel]; % N,E,D
+%         lineColors = [[0.9290 0.6940 0.1250];[0.4660 0.6740 0.1880];[0.3010 0.7450 0.9330];[0 0.4470 0.7410];[0.4940 0.1840 0.5560]];
+%         [tout_2d, yout_2d] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m, g, wind_2d), tspan, X0_2d, options);
+%         scatter(yout_2d(end,1),yout_2d(end,2),'filled',"LineWidth",2)
+% 
+%     end
+%     scatter(0,0,'+k')
+%     xlim([-30 800])
+%     ylim([0 1200])
+%     xlabel('North (X-axis)')
+%     ylabel('East (Y-axis)')
+%     title("Initial Altitude of " +init_altitude+"m")
+% end
+% 
 
 
-
-legend(" 0m/s Wind Landing Location","10m/s Wind Landing Location","20m/s Wind Landing Location","30m/s Wind Landing Location","40m/s Wind Landing Location","50m/s Wind Landing Location","60m/s Wind Landing Location","Origin",'Location','eastoutside');
+%legend(" 0m/s Wind Landing Location","10m/s Wind Landing Location","20m/s Wind Landing Location","30m/s Wind Landing Location","40m/s Wind Landing Location","50m/s Wind Landing Location","60m/s Wind Landing Location","Origin",'Location','eastoutside');
 %annotation('textbox', [.777 .4 .145 .25], 'string', {"V_0_,_E= 50m/s","V_0_,_D= -50m/s","No Wind"})
-zlim([-1 1])
+%zlim([-1 1])
 
 
 
