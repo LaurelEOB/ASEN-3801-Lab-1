@@ -18,14 +18,6 @@ X0 = [0, % N_0 (initial position in north direction)
       -20 % vD_0 (initial velocity in down direction)
        ];
 
-% 6 dimension initial state vector (3 intial positions & 3 initial velocities)
-X0_2d = [0, % N_0 (initial position in north direction)
-      0, % E_0 (initial position in east direction)
-      0, % D_0 (initial position in down direction)
-      0, % vN_0 (initial velocity in north direction)
-      50, % vE_0 (initial velocity in east direction)
-      -50 % vD_0 (initial velocity in down direction)
-       ];
 
 wind_2b = [0, % North direction
         0, % East direction
@@ -57,81 +49,64 @@ title("2.b No Wind")
 ylabel(colorbar, "Time [sec]")
 
 
+
 % Question 2.c.a
-% figure()
-% scatter3(yout_2c(:,1), yout_2c(:,2), -yout_2c(:,3), 50, tout_2c, "filled") 
-% 
-
-% title("2.c 20m/s Wind to the North")
-% 
-% ylabel(colorbar, "Time [sec]")
-
-figure('Position', [150 150 800 400]); hold on; view([0.2 -9 0.5]); grid minor;
-numOfLines = 7;
+numOfLines = 25;
 for j = 1:numOfLines
-    wind_vel = (j-1)*10
-    wind_2c = [ wind_vel,0,0]; % N,E,D
+    wind_vel(j) = (j-1)*2.5;
+    wind_2c = [wind_vel(j),0,0]; % N,E,D
     [tout_2c, yout_2c] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m, g, wind_2c), tspan, X0, options);
-    plot3(yout_2c(:,1), yout_2c(:,2), -yout_2c(:,3),'LineWidth',3) 
+    current__line_a(j) = yout_2c(end,1);
+    current__line_b(j) = sqrt((yout_2c(end,2)^2)+(yout_2c(end,1)^2));
 end
-xlabel('North (X-axis) [m]')
-ylabel('East (Y-axis) [m]')
-zlabel('Down (Flipped Z-axis) [m]')
 
-% xlim([-30 800])
-% ylim([0 1200])
-% xlabel('North (X-axis)')
-% ylabel('East (Y-axis)')
+figure('Position', [150 150 600 350]); hold on; grid on;
+title({"2.c: Effect of North Facing Wind on Horizontal Landing Location",""});
+plot(wind_vel,current__line_a,'b','LineWidth',2);
+scatter(wind_vel,current__line_a,30,'b','filled');
+xlabel('Wind Speed in North Direction [m/s]')
+ylabel({'Horizontal Position of Landing Location [m]',''})
 
-
-legend(" 0m/s Wind","10m/s Wind","20m/s Wind","30m/s Wind","40m/s Wind","50m/s Wind","60m/s Wind",'Location','eastoutside');
-%annotation('textbox', [.777 .4 .145 .25], 'string', {"V_0_,_E= 50m/s","V_0_,_D= -50m/s","No Wind"})
-
-
-% Question 2.d ** Looked interesting, but not correct 
-% figure('Position', [150 150 900 300]); hold on; view(90,0);
-% for i = 1:4
-%     rho = stdatmo(i*3000/4);
-%     lineColors = [[0.4660 0.6740 0.1880];[0.3010 0.7450 0.9330];[0 0.4470 0.7410];[0.4940 0.1840 0.5560]];
-%     [tout_2d, yout_2d] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m, g, wind_2b), tspan, X0_2d, options);
-%     plot3(yout_2d(:,1), yout_2d(:,2), -yout_2d(:,3),"LineWidth",2,"Color",lineColors(i,:))
-% end
-% xlabel('North (X-axis)')
-% ylabel('East (Y-axis)')
-% zlabel('Down (Flipped Z-axis)')
-% title("2.d Impact of Initial Altitude on Landing Location")
-% legend("750m Altitude","1500m Altitude","2250m Altitude","3000m Altitude");
-% annotation('textbox', [.777 .4 .145 .25], 'string', {"V_0_,_E= 50m/s","V_0_,_D= -50m/s","No Wind"})
-
-% Question 2.d 
-% figure('Position', [150 150 600 500]); 
-% t1 = tiledlayout(4,1);
-% for i = 1:4
-%     nexttile; hold on; grid on; grid on; grid minor;
-%     init_altitude = i*3000/4;
-%     rho = stdatmo(init_altitude);
-%     for j = 1:7
-%         wind_vel = (j-1)*10;
-%         wind_2d = [wind_vel,wind_vel,-wind_vel]; % N,E,D
-%         lineColors = [[0.9290 0.6940 0.1250];[0.4660 0.6740 0.1880];[0.3010 0.7450 0.9330];[0 0.4470 0.7410];[0.4940 0.1840 0.5560]];
-%         [tout_2d, yout_2d] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m, g, wind_2d), tspan, X0_2d, options);
-%         scatter(yout_2d(end,1),yout_2d(end,2),'filled',"LineWidth",2)
-% 
-%     end
-%     scatter(0,0,'+k')
-%     xlim([-30 800])
-%     ylim([0 1200])
-%     xlabel('North (X-axis)')
-%     ylabel('East (Y-axis)')
-%     title("Initial Altitude of " +init_altitude+"m")
-% end
-% 
+figure('Position', [150 150 600 350]); hold on; grid on;
+title({"2.c: Effect of North Facing Wind on Total Distance to Landing Location",""});
+plot(wind_vel,current__line_b,'b','LineWidth',2);
+scatter(wind_vel,current__line_b,30,'b','filled');
+xlabel('Wind Speed in North Direction [m/s]')
+ylabel({'Total Distance to Landing Location [m]',''})
 
 
-%legend(" 0m/s Wind Landing Location","10m/s Wind Landing Location","20m/s Wind Landing Location","30m/s Wind Landing Location","40m/s Wind Landing Location","50m/s Wind Landing Location","60m/s Wind Landing Location","Origin",'Location','eastoutside');
-%annotation('textbox', [.777 .4 .145 .25], 'string', {"V_0_,_E= 50m/s","V_0_,_D= -50m/s","No Wind"})
-%zlim([-1 1])
 
+%Question 2.d 
+figure('Position', [150 150 800 400]); hold on; grid on; grid on; grid minor;
+colororder("default")
+line_Colors = get(gca, 'ColorOrder');
+for i = 1:6
+    init_altitude(i) = i*3000/6;
+    rho = stdatmo(init_altitude(i));
+    for j = 1:25
+        wind_vel(j) = (j-1)*2.5;
+        wind_2d = [wind_vel(j),0,0]; % N,E,D
+        [tout_2d, yout_2d] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m, g, wind_2d), tspan, X0, options);
+        current_altitude_line(i,j) = sqrt((yout_2d(end,2)^2)+(yout_2d(end,1)^2));
+    end
+    plot(wind_vel,current_altitude_line(i,:),'Color',line_Colors(i,:),'LineWidth',1);
+    plot(wind_vel,current_altitude_line(i,:),'.','Color',line_Colors(i,:),'LineWidth',30);
+    xlim([-2 62])
+    ylim([68 75])
+    xlabel('Wind Speed in North Direction [m/s]')
+    ylabel({'Total Distance to Landing [m]',''})
+
+end
+title("2.d: Effect of Initial Altitude on Total Distance to Landing Location")
+legend("Initial Altitude of " +init_altitude(1)+"m",'',"Initial Altitude of " +init_altitude(2)+"m",'',"Initial Altitude of " +init_altitude(3)+"m",'',"Initial Altitude of " +init_altitude(4)+"m",'',"Initial Altitude of " +init_altitude(5)+"m",'',"Initial Altitude of " +init_altitude(6)+"m",'','Location','eastoutside');
+
+figure('Position', [150 150 600 350]); hold on; grid on; grid on; grid minor;
+title({"2.d: Effect of Initial Altitude on Minimum Total Distance to Landing Location",''})
+min_landing_locations = min(current_altitude_line');
+plot(init_altitude,min_landing_locations,'b','LineWidth',2);
+scatter(init_altitude,min_landing_locations,30,'b','filled');
+xlabel('Initial Altitude [m]')
+ylabel({'Minimum Landing Location Distance [m]',''})
 
 
 
