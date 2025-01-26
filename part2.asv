@@ -6,8 +6,8 @@ d = 0.02; % [m]
 Cd = 0.6; 
 h = 1655; % [m]
 A = pi * (d/2)^2; % [m^2]
-rho = stdatmo(h);
-g = -9.81;
+rho = stdatmo(h); % [kg/m^3]
+g = -9.81; % [m/s^2]
 
 % 6 dimension initial state vector (3 intial positions & 3 initial velocities)
 X0 = [0, % N_0 (initial position in north direction)
@@ -18,12 +18,8 @@ X0 = [0, % N_0 (initial position in north direction)
       -20 % vD_0 (initial velocity in down direction)
        ];
 
-wind_2b = [0, % North direction
-        0, % East direction
-        0% Down direction
-        ];
 
-wind_2c = [30, % North direction
+wind_2b = [0, % North direction
         0, % East direction
         0% Down direction
         ];
@@ -39,33 +35,122 @@ options = odeset('Events', @landing);
 
 
 
-[tout_2c, yout_2c] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m, g, wind_2c), tspan, X0, options);
-
-
-
 % Question 2.b
 figure()
 
 scatter3(yout_2b(:,1), yout_2b(:,2), -yout_2b(:,3), 50, tout_2b, "filled") 
 
-xlabel('North')
-ylabel('East')
-zlabel('Down (flipped)')
+xlabel('North (X-axis)')
+ylabel('East (Y-axis)')
+zlabel('Down (Flipped Z-axis)')
 title("2.b No Wind")
 
-ylabel(colorbar, "time")
+ylabel(colorbar, "Time [sec]")
+
 
 
 % Question 2.c.a
-figure()
-scatter3(yout_2c(:,1), yout_2c(:,2), -yout_2c(:,3), 50, tout_2c, "filled") 
+numOfLines = 25;
+for j = 1:numOfLines
+    wind_vel(j) = (j-1)*2.5;
+    wind_2c = [wind_vel(j),0,0]; % N,E,D
+    [tout_2c, yout_2c] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m, g, wind_2c), tspan, X0, options);
+    current__line_a(j) = yout_2c(end,1);
+    current__line_b(j) = sqrt((yout_2c(end,2)^2)+(yout_2c(end,1)^2));
+end
 
-xlabel('North')
-ylabel('East')
-zlabel('Down (flipped)')
-title("2.c No Wind")
+figure('Position', [150 150 600 350]); hold on; grid on;
+title({"2.c: Effect of North Facing Wind on Horizontal Landing Location",""});
+plot(wind_vel,current__line_a,'b','LineWidth',2);
+scatter(wind_vel,current__line_a,30,'b','filled');
+xlabel('Wind Speed in North Direction [m/s]')
+ylabel({'Horizontal Position of Landing Location [m]',''})
 
-ylabel(colorbar, "time")
+figure('Position', [150 150 600 350]); hold on; grid on;
+title({"2.c: Effect of North Facing Wind on Total Distance to Landing Location",""});
+plot(wind_vel,current__line_b,'b','LineWidth',2);
+scatter(wind_vel,current__line_b,30,'b','filled');
+xlabel('Wind Speed in North Direction [m/s]')
+ylabel({'Total Distance to Landing Location [m]',''})
+
+
+
+%Question 2.d 
+figure('Position', [150 150 800 400]); hold on; grid on; grid on; grid minor;
+colororder("default")
+line_Colors = get(gca, 'ColorOrder');
+for i = 1:6
+    init_altitude(i) = i*3000/6;
+    rho = stdatmo(init_altitude(i));
+    for j = 1:25
+        wind_vel(j) = (j-1)*2.5;
+        wind_2d = [wind_vel(j),0,0]; % N,E,D
+        [tout_2d, yout_2d] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m, g, wind_2d), tspan, X0, options);
+        current_altitude_line(i,j) = sqrt((yout_2d(end,2)^2)+(yout_2d(end,1)^2));
+    end
+    plot(wind_vel,current_altitude_line(i,:),'Color',line_Colors(i,:),'LineWidth',1);
+    plot(wind_vel,current_altitude_line(i,:),'.','Color',line_Colors(i,:),'LineWidth',30);
+    xlim([-2 62])
+    ylim([68 75])
+    xlabel('Wind Speed in North Direction [m/s]')
+    ylabel({'Total Distance to Landing [m]',''})
+
+end
+title("2.d: Effect of Initial Altitude on Total Distance to Landing Location")
+legend("Initial Altitude of " +init_altitude(1)+"m",'',"Initial Altitude of " +init_altitude(2)+"m",'',"Initial Altitude of " +init_altitude(3)+"m",'',"Initial Altitude of " +init_altitude(4)+"m",'',"Initial Altitude of " +init_altitude(5)+"m",'',"Initial Altitude of " +init_altitude(6)+"m",'','Location','eastoutside');
+
+figure('Position', [150 150 600 350]); hold on; grid on; grid on; grid minor;
+title({"2.d: Effect of Initial Altitude on Minimum Total Distance to Landing Location",''})
+min_landing_locations = min(current_altitude_line');
+plot(init_altitude,min_landing_locations,'b','LineWidth',2);
+scatter(init_altitude,min_landing_locations,30,'b','filled');
+xlabel('Initial Altitude [m]')
+ylabel({'Minimum Landing Location Distance [m]',''})
+
+
+% Question 2.e
+
+KE = sqrt(800); % Original KE from 2b [J]
+
+
+numOfLines = 20;
+
+m_array = [];
+
+for j = 1:numOfLines
+    m_2e = 0.01 + 0.01 * (j-1);
+    m_array = [m_array m_2e];
+
+    Vmag_2e = sqrt((2*KE)/m_2e);
+
+    % new_KE = (1/2)*m_2e*(Vmag_2e)^2  % verify constant KE
+
+
+    V_2e = sqrt(((Vmag_2e)^2 / 2));
+    
+    X0 = [0, % N_0 (initial position in north direction)
+          0, % E_0 (initial position in east direction)
+          0, % D_0 (initial position in down direction)
+          0, % vN_0 (initial velocity in north direction)
+          V_2e, % vE_0 (initial velocity in east direction)
+          -V_2e % vD_0 (initial velocity in down direction)
+           ];
+       
+
+    wind_2e = [0,0,0]; % N,E,D
+    [tout_2e, yout_2e] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m_2e, g, wind_2e), tspan, X0, options);
+
+    current__line_2e_a(j) = yout_2e(end,1);
+    current__line_2e_b(j) = sqrt((yout_2e(end,2)^2)+(yout_2e(end,1)^2));
+end
+
+figure('Position', [150 150 600 350]); hold on; grid on;
+title({"2.e: Effect of Mass on Total Distance to Landing Location with Constant Initial Kinetic Energy",""});
+plot(m_array,current__line_2e_a,'b','LineWidth',2);
+scatter(m_array,current__line_2e_b,30,'b','filled');
+xlabel('Mass of Object [kg]')
+ylabel({'Total Distance to Landing Location [m]',''})
+
 
 function xdot = objectEOM(t,X,rho,Cd,A,m,g,wind)
 % function vectorEx = odefun(t,X)

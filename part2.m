@@ -6,8 +6,8 @@ d = 0.02; % [m]
 Cd = 0.6; 
 h = 1655; % [m]
 A = pi * (d/2)^2; % [m^2]
-rho = stdatmo(h);
-g = -9.81;
+rho = stdatmo(h); % [kg/m^3]
+g = -9.81; % [m/s^2]
 
 % 6 dimension initial state vector (3 intial positions & 3 initial velocities)
 X0 = [0, % N_0 (initial position in north direction)
@@ -31,12 +31,11 @@ tspan = linspace(0,20,2000);
 
 options = odeset('Events', @landing);
 
-[tout_2b, yout_2b] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m, g, wind_2b), tspan, X0, options);
-
-
-
 
 % Question 2.b
+
+[tout_2b, yout_2b] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m, g, wind_2b), tspan, X0, options);
+
 figure()
 
 scatter3(yout_2b(:,1), yout_2b(:,2), -yout_2b(:,3), 50, tout_2b, "filled") 
@@ -108,6 +107,47 @@ scatter(init_altitude,min_landing_locations,30,'b','filled');
 xlabel('Initial Altitude [m]')
 ylabel({'Minimum Landing Location Distance [m]',''})
 
+
+% Question 2.e
+
+KE = 20; % Original KE from 2b [J]
+
+numOfLines = 100;
+
+m_array = [];
+
+for j = 1:numOfLines
+    m_2e = 0.001 + 0.001 * (j-1);
+    m_array = [m_array m_2e];
+
+    Vmag_2e = sqrt((2*KE)/m_2e);
+
+    % new_KE = (1/2)*m_2e*(Vmag_2e)^2  % verify constant KE
+
+
+    V_2e = sqrt(((Vmag_2e)^2 / 2));
+    
+    X0_2e = [0, % N_0 (initial position in north direction)
+          0, % E_0 (initial position in east direction)
+          0, % D_0 (initial position in down direction)
+          0, % vN_0 (initial velocity in north direction)
+          V_2e, % vE_0 (initial velocity in east direction)
+          -V_2e % vD_0 (initial velocity in down direction)
+           ];
+       
+
+    wind_2e = [0,0,0]; % N,E,D
+    [tout_2e, yout_2e] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m_2e, g, wind_2e), tspan, X0_2e, options);
+
+    current__line_2e(j) = sqrt((yout_2e(end,2)^2)+(yout_2e(end,1)^2));
+end
+
+figure('Position', [150 150 600 350]); hold on; grid on;
+title({"2.e: Effect of Mass on Total Distance to Landing Location with Constant Initial Kinetic Energy",""});
+plot(m_array,current__line_2e,'b','LineWidth',2);
+scatter(m_array,current__line_2e,30,'b','filled');
+xlabel('Mass of Object [kg]')
+ylabel({'Total Distance to Landing Location [m]',''})
 
 
 function xdot = objectEOM(t,X,rho,Cd,A,m,g,wind)
