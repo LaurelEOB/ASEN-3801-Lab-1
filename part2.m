@@ -110,6 +110,8 @@ ylabel({'Minimum Landing Location Distance [m]',''})
 
 % Question 2.e
 
+rho = stdatmo(h); % [kg/m^3]
+
 KE = 20; % Original KE from 2b [J]
 
 numOfLines = 100;
@@ -137,9 +139,22 @@ for j = 1:numOfLines
        
 
     wind_2e = [0,0,0]; % N,E,D
-    [tout_2e, yout_2e] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m_2e, g, wind_2e), tspan, X0_2e, options);
 
+   
+
+    [tout_2e, yout_2e] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m_2e, g, wind_2e), tspan, X0_2e, options);
     current__line_2e(j) = sqrt((yout_2e(end,2)^2)+(yout_2e(end,1)^2));
+
+
+    % For Debugging
+    if m_2e == 0.05
+        disp(m_2e)
+        disp(wind_2e)
+        disp(X0_2e)
+        disp(yout_2e(end,2))
+
+    end
+
 end
 
 figure('Position', [150 150 600 350]); hold on; grid on;

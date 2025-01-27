@@ -31,11 +31,11 @@ tspan = linspace(0,20,2000);
 
 options = odeset('Events', @landing);
 
-[tout_2b, yout_2b] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m, g, wind_2b), tspan, X0, options);
-
-
 
 % Question 2.b
+
+[tout_2b, yout_2b] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m, g, wind_2b), tspan, X0, options);
+
 figure()
 
 scatter3(yout_2b(:,1), yout_2b(:,2), -yout_2b(:,3), 50, tout_2b, "filled") 
@@ -110,15 +110,14 @@ ylabel({'Minimum Landing Location Distance [m]',''})
 
 % Question 2.e
 
-KE = sqrt(800); % Original KE from 2b [J]
+KE = 20; % Original KE from 2b [J]
 
-
-numOfLines = 20;
+numOfLines = 100;
 
 m_array = [];
 
 for j = 1:numOfLines
-    m_2e = 0.01 + 0.01 * (j-1);
+    m_2e = 0.001 + 0.001 * (j-1);
     m_array = [m_array m_2e];
 
     Vmag_2e = sqrt((2*KE)/m_2e);
@@ -128,7 +127,7 @@ for j = 1:numOfLines
 
     V_2e = sqrt(((Vmag_2e)^2 / 2));
     
-    X0 = [0, % N_0 (initial position in north direction)
+    X0_2e = [0, % N_0 (initial position in north direction)
           0, % E_0 (initial position in east direction)
           0, % D_0 (initial position in down direction)
           0, % vN_0 (initial velocity in north direction)
@@ -138,16 +137,27 @@ for j = 1:numOfLines
        
 
     wind_2e = [0,0,0]; % N,E,D
-    [tout_2e, yout_2e] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m_2e, g, wind_2e), tspan, X0, options);
 
-    current__line_2e_a(j) = yout_2e(end,1);
-    current__line_2e_b(j) = sqrt((yout_2e(end,2)^2)+(yout_2e(end,1)^2));
+   
+
+    [tout_2e, yout_2e] = ode45(@(t,X) objectEOM(t,X, rho, Cd, A, m_2e, g, wind_2e), tspan, X0_2e, options);
+
+    For De-bugging
+    if m_2e == 0.05
+        disp(m_2e)
+        disp(wind_2e)
+        disp(X0_2e)
+        disp(yout_2e(end,2))
+
+    end
+
+    current__line_2e(j) = sqrt((yout_2e(end,2)^2)+(yout_2e(end,1)^2));
 end
 
 figure('Position', [150 150 600 350]); hold on; grid on;
 title({"2.e: Effect of Mass on Total Distance to Landing Location with Constant Initial Kinetic Energy",""});
-plot(m_array,current__line_2e_a,'b','LineWidth',2);
-scatter(m_array,current__line_2e_b,30,'b','filled');
+plot(m_array,current__line_2e,'b','LineWidth',2);
+scatter(m_array,current__line_2e,30,'b','filled');
 xlabel('Mass of Object [kg]')
 ylabel({'Total Distance to Landing Location [m]',''})
 
